@@ -1,0 +1,118 @@
+Exercise 1
+Reflect the data model shown in schema/addressbook_normalized.png within database decodemtl_addressbook
+
+create database decodemtl_addressbook;
+use decodemtl_addressbook
+CREATE TABLE Account (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255),
+    password VARCHAR(40),
+    createdOn DATETIME,
+    modifiedOn DATETIME
+);
+CREATE TABLE AddressBook (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    accountId INT,
+    name VARCHAR(255),
+    createdOn DATETIME,
+    modifiedOn DATETIME
+);
+CREATE TABLE Entry (
+    id INT AUTO_INCREMENT PRIMARY KEY, 
+    addressBookId INT,
+    firstName VARCHAR(255),
+    lastName VARCHAR(255),
+    birthday DATETIME,
+    type ENUM('phone', 'address','electronic-mail')
+);
+CREATE TABLE Phone (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    entryId INT,
+    type ENUM('home', 'work', 'other'),
+    subtype ENUM('landline', 'cellular','fax'),
+    content VARCHAR(255)
+);
+CREATE TABLE Address (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    entryId INT,
+    type ENUM('home', 'work', 'other'), 
+    addressLine1 VARCHAR(255),
+    addressLine2 VARCHAR(255),
+    city VARCHAR(255), 
+    province VARCHAR(128), 
+    country VARCHAR(128),
+    postalCode VARCHAR(10)
+);
+CREATE TABLE ElectronicMail (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    entryId INT,
+    type ENUM('home', 'work', 'other'), 
+    content VARCHAR(255)
+);
+
+=====================
+Exercise 2
+Bulk import data from the source files into decodemtl_addressbook:
+source data/import-account.sql
+source data/import-addressbook.sql
+source data/import-entry.sql
+
+=====================
+Exercise 3
+List all of the countries with respective occurence totals in DESC order
+Country names should all appear lowercase
+
+select count(*), LCASE(Address.country) from Address  GROUP BY country order by count(*) desc;  
+
+=====================
+Exercise 4
+List all of the first names for AddressBook.name="Pharetra Ut Limited"
+
+SELECT firstName  FROM Entry JOIN AddressBook ON Entry.addressBookId = AddressBook.id where AddressBook.name="Pharetra Ut Limited"; 
+
+=====================
+Exercise 5
+List all of the emails associated to AddressBook.id = 100
+
+SELECT email FROM Account JOIN AddressBook ON Account.id = AddressBook.accountId where AddressBook.id= 100;
+
+=====================
+Exercise 6
+List all of the phone numbers for Jenkins, Charlotte
+
+Entry.type = 'phone'
+
+SELECT firstName, lastName FROM Entry JOIN Phone ON Entry.id = Phone.entryId where Entry.firstName = "Charlotte" AND Entry.lastName = "Jenkins";
+
+=====================
+Exercise 7
+List all possible domain name values for ElectronicMail (email@domain.name)
+
+SELECT SUBSTRING_INDEX(ElectronicMail.content, '@', -1) AS `Email Domain`, COUNT(*) FROM ElectronicMail GROUP BY SUBSTRING_INDEX(ElectronicMail.content, '@', -1);
+
+=====================
+Exercise 8
+List how many phones were landlines, cellular and fax for entries with birthdates between October 1950 and October 1960
+
+select count(*), subtype from Phone Join Entry ON Entry.id = Phone.entryId where Entry.birthday BETWEEN "1950-10-01" AND "1960-10-30" group by subtype;
+
+=====================
+Exercise 9
+List all of the cities within the countries of Canada, Austria, Isle of Man, Ireland and Japan.
+
+select city from Address where country IN("Canada", "Austria", "Isle of Man", "Ireland", "Japan"); 
+
+=====================
+Exercise 10
+Transform all work emails into home emails and vice versa. BE CAREFUL ;)
+
+
+    
+    UPDATE ElectronicMail SET type = CASE
+    WHEN type = 'work' THEN 'home'
+        WHEN type = 'home' THEN 'work'
+    END;
+
+
+
+
